@@ -1,4 +1,6 @@
-TOKEN_TYPES = INT, ADD, MINU, MUL, DIV, EOF = ('INT', 'ADD', 'MINU', 'MUL', 'DIV', 'EOF')
+TOKEN_TYPES = (
+    INTEGER, ADD, MINU, MUL, DIV, LPAREN, RPAREN, EOF) = (
+    'INTEGER', 'ADD', 'MINU', 'MUL', 'DIV', 'LPAREN', 'RPAREN', 'EOF')
 
 
 class Token(object):
@@ -38,7 +40,7 @@ class Interpreter(object):
                 continue
 
             if value.isdigit():
-                return Token(INT, self.integer())
+                return Token(INTEGER, self.integer())
 
             if value == '+':
                 self.roll_next()
@@ -52,6 +54,12 @@ class Interpreter(object):
             if value == '/':
                 self.roll_next()
                 return Token(DIV, value)
+            if value == '(':
+                self.roll_next()
+                return Token(LPAREN, value)
+            if value == ')':
+                self.roll_next()
+                return Token(RPAREN, value)
 
             return self.error()
 
@@ -72,8 +80,15 @@ class Interpreter(object):
 
     def factor(self):
         token = self.current_token
-        self.eat(INT)
-        return token.token
+        if token.type_ == INTEGER:
+            self.eat(INTEGER)
+            return token.token
+
+        if token.type_ == LPAREN:
+            self.eat(LPAREN)
+            result = self.expr()
+            self.eat(RPAREN)
+            return result
 
     def term(self):
         result = self.factor()
